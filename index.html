@@ -1114,10 +1114,12 @@ function confirmModal(title, text, onYes, yesLabel, danger) {
 }
 
 /* ---------------- Screen navigation ---------------- */
-let currentScreen = 'scr-onboard';
+/* FIX: стартуем с пустого значения, чтобы первый вызов showScreen('scr-onboard')
+   реально добавил класс .active и стартовый экран не оставался прозрачным. */
+let currentScreen = '';
 function showScreen(id) {
   if (currentScreen === id) return;
-  const prev = document.getElementById(currentScreen);
+  const prev = currentScreen ? document.getElementById(currentScreen) : null;
   const next = document.getElementById(id);
   if (prev) prev.classList.remove('active');
   if (next) {
@@ -3623,7 +3625,12 @@ function renderAll() {
 /* ============================================================
    BOOT
    ============================================================ */
+/* FIX: защита от повторного вызова boot() (Safari иногда триггерит readyState
+   и DOMContentLoaded, из-за чего инициализация происходила дважды). */
+let booted = false;
 function boot() {
+  if (booted) return;
+  booted = true;
   loadDB();
 
   // system theme listener
