@@ -1,643 +1,2162 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WB PVZ Terminal</title>
-<style>
-  /* ================= ПЕРЕМЕННЫЕ И БАЗА ================= */
-  :root {
-    --accent: #17325c;       
-    --accent-hover: #0f233f;
-    --accent-light: #e5ecf5; 
-    --bg-main: #f4f6f9;
-    --bg-panel: #ffffff;
-    --text-main: #1a1a1a;
-    --text-muted: #8b94a3;
-    --border: #e0e4ea;
-    --danger-bg: #fff0f0;
-    --danger-text: #d93838;
-    --danger-border: #ffcccc;
-    --success: #12a05c;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WB PVZ Terminal - Enterprise Edition</title>
+    <style>
+        /* ==========================================================================
+           1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СБРОС СТИЛЕЙ (RESET)
+           ========================================================================== */
+        
+        :root {
+            /* Основные цвета бренда (Темно-синий акцент) */
+            --color-primary: #17325c;
+            --color-primary-hover: #0f233f;
+            --color-primary-light: #e5ecf5;
+            --color-primary-alpha: rgba(23, 50, 92, 0.1);
+            
+            /* Фоновые цвета */
+            --color-bg-main: #f4f6f9;
+            --color-bg-panel: #ffffff;
+            --color-bg-hover: #fafbfc;
+            
+            /* Текстовые цвета */
+            --color-text-main: #1a1a1a;
+            --color-text-muted: #8b94a3;
+            --color-text-inverse: #ffffff;
+            
+            /* Цвета границ и разделителей */
+            --color-border: #e0e4ea;
+            --color-border-focus: #17325c;
+            
+            /* Системные цвета (Статусы) */
+            --color-danger: #d93838;
+            --color-danger-bg: #fff0f0;
+            --color-danger-border: #ffcccc;
+            --color-success: #12a05c;
+            --color-success-bg: #e3f6ec;
+            --color-warning: #f59e0b;
+            --color-warning-bg: #fef3c7;
+            
+            /* Тени */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            
+            /* Скругления */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* Анимации */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { background: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-  
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #cbd2dc; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #a0aab8; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-  /* ================= САЙДБАР ================= */
-  .sidebar {
-    width: 96px; background: var(--bg-panel); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; align-items: center; padding: 15px 0; z-index: 10;
-    transition: width 0.3s;
-  }
-  .sidebar-logo { width: 44px; height: 44px; background: var(--accent-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: var(--accent); }
-  .sidebar-info { font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; margin-bottom: 20px; }
-  
-  .nav-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; height: 70px; color: var(--text-muted); font-size: 10px;
-    cursor: pointer; transition: 0.2s; position: relative; border-left: 3px solid transparent;
-  }
-  .nav-item:hover { color: var(--accent); background: #fafbfc; }
-  .nav-item.active { color: var(--accent); background: var(--accent-light); border-left-color: var(--accent); font-weight: 600; }
-  .nav-item svg { width: 22px; height: 22px; margin-bottom: 6px; }
-  .badge-red { position: absolute; top: 12px; right: 24px; background: #ff3b30; color: #fff; font-size: 9px; font-weight: bold; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--bg-panel); }
-  
-  /* Специфичное меню для ВОЗВРАТА */
-  .return-menu { display: none; flex-direction: column; width: 100%; animation: fadeIn 0.2s ease; }
-  .return-menu.show { display: flex; }
-  
-  .sidebar-bottom { margin-top: auto; width: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--color-bg-main);
+            color: var(--color-text-main);
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-size: 14px;
+        }
 
-  /* ================= ОСНОВНАЯ ЧАСТЬ ================= */
-  .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        /* Кастомизация скроллбара для Webkit браузеров */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd2dc;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aab8;
+        }
 
-  /* ТОПБАР */
-  .topbar { height: 70px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 24px; }
-  .topbar-icons { display: flex; gap: 20px; color: var(--text-muted); align-items: center; }
-  .topbar-icons svg { width: 22px; height: 22px; cursor: pointer; transition: 0.2s; }
-  .topbar-icons svg:hover { color: var(--accent); }
+        /* Утилитарные классы */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .text-center { text-align: center; }
+        .w-full { width: 100%; }
+        
+        /* ==========================================================================
+           2. БОКОВАЯ ПАНЕЛЬ (SIDEBAR)
+           ========================================================================== */
+        
+        .sidebar {
+            width: 100px;
+            background-color: var(--color-bg-panel);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            z-index: 100;
+            flex-shrink: 0;
+            transition: width var(--transition-normal);
+        }
 
-  .topbar-tabs { display: flex; height: 100%; flex: 1; justify-content: space-between; max-width: 750px; }
-  .tab {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-muted); position: relative; font-size: 12px; font-weight: 500;
-    transition: 0.2s; padding: 0 15px; border-bottom: 3px solid transparent;
-  }
-  .tab:hover { color: var(--accent); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab svg { width: 22px; height: 22px; margin-bottom: 4px; }
-  .tab-badge { position: absolute; top: 10px; right: 5px; background: var(--accent); color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; }
+        .sidebar-logo {
+            width: 52px;
+            height: 52px;
+            background-color: var(--color-primary-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
 
-  /* КОНТЕНТ */
-  .content-wrapper { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
-  
-  .tab-content { display: none; height: 100%; }
-  .tab-content.active { display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .sidebar-info {
+            font-size: 10px;
+            color: var(--color-text-muted);
+            text-align: center;
+            line-height: 1.4;
+            margin-bottom: 30px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-  /* ================= ОБЩИЕ КОМПОНЕНТЫ ================= */
-  .btn { border: none; border-radius: 10px; padding: 14px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-  .btn-outline:hover { background: var(--accent-light); }
-  .btn:active { transform: scale(0.98); }
+        .nav-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
 
-  /* Тосты (Уведомления) */
-  #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-  .toast { background: #1a1a1a; color: #fff; padding: 14px 20px; border-radius: 10px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease forwards; display: flex; align-items: center; gap: 10px; }
-  .toast.success { border-left: 4px solid var(--success); }
-  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        .nav-item {
+            width: 100%;
+            height: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            position: relative;
+            border-left: 4px solid transparent;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            outline: none;
+        }
 
-  /* ================= ВКЛАДКА: ВЫДАЧА ================= */
-  .issue-layout { display: flex; gap: 24px; height: 100%; }
-  .issue-center { flex: 1; background: var(--bg-panel); border-radius: 16px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative; }
-  .issue-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-  .issue-subtitle { font-size: 15px; color: var(--text-main); margin-bottom: 30px; }
-  
-  .scanner-svg { width: 280px; height: 200px; margin-bottom: 20px; }
-  .divider { color: var(--text-muted); font-size: 14px; margin-bottom: 15px; }
-  .phone-input { width: 100%; max-width: 340px; padding: 16px; font-size: 18px; text-align: center; border: 2px solid var(--border); border-radius: 12px; outline: none; transition: 0.2s; letter-spacing: 2px; }
-  .phone-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-light); }
-  .link-btn { background: none; border: none; color: var(--accent); font-size: 14px; font-weight: 600; margin-top: 24px; cursor: pointer; }
-  .link-btn:hover { text-decoration: underline; }
+        .nav-item:hover {
+            color: var(--color-primary);
+            background-color: var(--color-bg-hover);
+        }
 
-  /* Карточка найденного клиента (появляется при вводе 4 цифр) */
-  .client-found-card { display: none; background: var(--accent-light); border: 2px solid var(--accent); border-radius: 16px; padding: 24px; margin-top: 20px; text-align: left; width: 100%; max-width: 400px; animation: fadeIn 0.3s; }
-  .client-found-card.show { display: block; }
-  .client-found-card h4 { font-size: 16px; color: var(--accent); margin-bottom: 12px; }
-  .client-found-card p { font-size: 14px; margin-bottom: 8px; color: var(--text-main); }
+        .nav-item.active {
+            color: var(--color-primary);
+            background-color: var(--color-primary-light);
+            border-left-color: var(--color-primary);
+            font-weight: 600;
+        }
 
-  .issue-right { width: 320px; background: var(--bg-panel); border-radius: 16px; padding: 30px; display: flex; flex-direction: column; border: 1px solid var(--border); }
-  .cert-card { background: var(--accent); border-radius: 16px; padding: 30px 20px; text-align: center; color: #fff; margin-bottom: 24px; }
-  .cert-logo { font-size: 48px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
-  .cert-text { font-size: 12px; opacity: 0.8; }
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+            transition: transform var(--transition-fast);
+        }
 
-  /* ================= ВКЛАДКА: ПРИЁМКА ================= */
-  .receive-layout { display: flex; gap: 24px; height: 100%; }
-  .receive-center { flex: 1; background: var(--bg-panel); border-radius: 16px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border); text-align: center; }
-  .receive-right { width: 340px; background: var(--bg-panel); border-radius: 16px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; }
-  .receive-right .btn { width: 100%; justify-content: center; }
-  
-  .scan-timer { font-size: 32px; font-weight: 700; color: var(--accent); text-align: center; margin: 10px 0; display: none; }
-  .scan-timer.show { display: block; }
-  
-  .received-list { margin-top: 20px; width: 100%; max-width: 400px; text-align: left; }
-  .received-item { background: var(--bg-main); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; animation: fadeIn 0.3s; border-left: 3px solid var(--success); }
+        .nav-item:hover svg {
+            transform: scale(1.1);
+        }
 
-  /* ================= ВКЛАДКА: ВОЗВРАТ ================= */
-  .return-layout { display: flex; flex-direction: column; gap: 16px; height: 100%; }
-  .filters-row { display: flex; gap: 15px; align-items: center; }
-  .filter-select { padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg-panel); outline: none; cursor: pointer; min-width: 180px; color: var(--text-main); }
-  .filter-checkbox { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
-  .filter-checkbox input { width: 18px; height: 18px; accent-color: var(--accent); }
+        .nav-text {
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.2;
+        }
 
-  .banner { background: var(--accent-light); color: var(--accent); padding: 12px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 500; border: 1px solid #d0dbeb; transition: 0.3s; }
-  .banner.hidden { display: none; }
-  .banner span.close { cursor: pointer; font-size: 18px; font-weight: bold; opacity: 0.6; }
-  .banner span.close:hover { opacity: 1; color: #d93838; }
+        /* Красный бейдж уведомлений */
+        .badge-red {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            background-color: #ff3b30;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            padding: 0 4px;
+            border: 2px solid var(--color-bg-panel);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-  .return-work-area { display: flex; gap: 20px; flex: 1; }
-  .return-left { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-  .count-box { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; transition: 0.2s; }
-  .count-box .title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
-  .count-box .number { font-size: 32px; font-weight: 700; color: var(--text-main); }
-  .warning-box { background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: 12px; padding: 16px; position: relative; }
-  .warning-box p { font-size: 12px; color: var(--danger-text); line-height: 1.5; margin-bottom: 8px; }
-  .warning-box p:last-child { margin-bottom: 0; }
-  
-  .return-right { flex: 1; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-  .placeholder-text { font-size: 15px; color: var(--text-muted); text-align: center; margin-top: 20px; line-height: 1.5; }
+        /* Меню, которое появляется только во вкладке "Возврат" */
+        .dynamic-return-menu {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            background-color: var(--color-bg-main);
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+            padding: 10px 0;
+            animation: slideDown 0.3s ease forwards;
+        }
 
-  /* ================= ВКЛАДКА: ДОСТАВКИ ================= */
-  .delivery-layout { display: flex; flex-direction: column; gap: 15px; }
-  .delivery-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-  .delivery-card.arrived { border-color: var(--success); background: #f0fdf4; }
-  .delivery-card-info h3 { font-size: 18px; margin-bottom: 8px; }
-  .delivery-card-info p { font-size: 14px; color: var(--text-muted); }
-  .delivery-status { background: var(--accent-light); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .delivery-card.arrived .delivery-status { background: #dcfce7; color: var(--success); }
+        .dynamic-return-menu.show {
+            display: flex;
+        }
 
-  /* ================= ВКЛАДКА: ЕЩЕ ================= */
-  .settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-  .settings-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .settings-left { display: flex; align-items: center; gap: 16px; }
-  .settings-icon { width: 50px; height: 50px; background: var(--accent-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); }
-  .settings-text h4 { font-size: 15px; margin-bottom: 4px; }
-  .settings-text p { font-size: 12px; color: var(--text-muted); }
-  
-  /* Тумблер */
-  .toggle { position: relative; width: 48px; height: 26px; background: #cbd5e1; border-radius: 20px; cursor: pointer; transition: 0.3s; }
-  .toggle.on { background: var(--accent); }
-  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s; }
-  .toggle.on::after { transform: translateX(22px); }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-</style>
+        .sidebar-bottom {
+            margin-top: auto;
+            width: 100%;
+            border-top: 1px solid var(--color-border);
+            padding-top: 10px;
+        }
+
+        /* ==========================================================================
+           3. ГЛАВНАЯ ОБЛАСТЬ И ВЕРХНЕЕ МЕНЮ (TOPBAR)
+           ========================================================================== */
+        
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .topbar {
+            height: 80px;
+            background-color: var(--color-bg-panel);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            gap: 30px;
+            z-index: 90;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .topbar-utils-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            color: var(--color-text-muted);
+        }
+
+        .topbar-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-fast);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-icon-btn:hover {
+            color: var(--color-primary);
+            background-color: var(--color-bg-main);
+        }
+
+        .topbar-tabs-container {
+            flex: 1;
+            display: flex;
+            height: 100%;
+            gap: 10px;
+            max-width: 800px;
+        }
+
+        .top-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            position: relative;
+            transition: all var(--transition-fast);
+            border-bottom: 3px solid transparent;
+            height: 100%;
+        }
+
+        .top-tab:hover {
+            color: var(--color-primary);
+            background-color: rgba(244, 246, 249, 0.5);
+        }
+
+        .top-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .top-tab svg {
+            width: 22px;
+            height: 22px;
+            margin-bottom: 6px;
+        }
+
+        .top-tab-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: var(--color-primary);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 8px;
+        }
+
+        .topbar-utils-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: var(--color-text-muted);
+        }
+
+        .sys-clock {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-primary);
+            background-color: var(--color-primary-light);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            letter-spacing: 1px;
+        }
+
+        /* ==========================================================================
+           4. КОНТЕНТНАЯ ЧАСТЬ И ОБЩИЕ КОМПОНЕНТЫ
+           ========================================================================== */
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        .tab-content {
+            display: none;
+            height: 100%;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            gap: 10px;
+            outline: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-text-inverse);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--color-primary-light);
+        }
+
+        .btn-danger {
+            background-color: var(--color-danger-bg);
+            color: var(--color-danger);
+            border: 1px solid var(--color-danger-border);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--color-danger);
+            color: white;
+        }
+
+        .btn-icon {
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        /* Поля ввода */
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: all var(--transition-fast);
+            background-color: var(--color-bg-panel);
+            color: var(--color-text-main);
+        }
+
+        .input-field:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px var(--color-primary-alpha);
+        }
+
+        /* Карточки (Панели) */
+        .panel {
+            background-color: var(--color-bg-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 30px;
+        }
+
+        /* Система уведомлений (Toast) */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .toast.toast-success { border-left-color: var(--color-success); }
+        .toast.toast-error { border-left-color: var(--color-danger); }
+
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+
+        /* ==========================================================================
+           5. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ВЫДАЧА"
+           ========================================================================== */
+        
+        .issue-layout {
+            display: flex;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .issue-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .issue-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--color-text-main);
+            margin-bottom: 12px;
+        }
+
+        .issue-subtitle {
+            font-size: 16px;
+            color: var(--color-text-muted);
+            margin-bottom: 40px;
+        }
+
+        .scanner-graphic {
+            width: 320px;
+            height: 240px;
+            margin-bottom: 30px;
+        }
+
+        .divider-text {
+            font-size: 15px;
+            color: var(--color-text-muted);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .divider-text::before,
+        .divider-text::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--color-border);
+            margin: 0 15px;
+        }
+
+        .phone-input-wrapper {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .phone-input {
+            text-align: center;
+            letter-spacing: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            padding: 20px;
+        }
+
+        .client-card-found {
+            background-color: var(--color-primary-light);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 24px;
+            width: 100%;
+            max-width: 400px;
+            animation: scaleIn 0.3s ease;
+            display: none; /* Управляется через JS */
+        }
+
+        .client-card-found.show {
+            display: block;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .client-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .issue-right-panel {
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .certificate-banner {
+            background: linear-gradient(135deg, var(--color-primary), #2a4b7c);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            color: white;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .cert-logo {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        /* ==========================================================================
+           6. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ПРИЁМКА"
+           ========================================================================== */
+        
+        .receive-layout {
+            display: flex;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .receive-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .receive-right-panel {
+            width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .received-items-list {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .received-item {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-left: 4px solid var(--color-success);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease;
+        }
+
+        .timer-display {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-align: center;
+            padding: 20px;
+            background-color: var(--color-primary-light);
+            border-radius: var(--radius-md);
+            display: none;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-display.show {
+            display: block;
+        }
+
+        /* ==========================================================================
+           7. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ВОЗВРАТ"
+           ========================================================================== */
+        
+        .return-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .filters-toolbar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .select-filter {
+            padding: 12px 16px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .checkbox-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .checkbox-filter input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-primary);
+        }
+
+        .info-alert {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(23,50,92,0.2);
+        }
+
+        .close-alert {
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .close-alert:hover {
+            opacity: 1;
+        }
+
+        .return-workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .return-sidebar-controls {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-box-title {
+            font-size: 14px;
+            color: var(--color-text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-box-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--color-text-main);
+            line-height: 1;
+        }
+
+        .warning-box {
+            background-color: var(--color-danger-bg);
+            border: 1px solid var(--color-danger-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+
+        .warning-box p {
+            font-size: 13px;
+            color: var(--color-danger);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .warning-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .return-dropzone {
+            flex: 1;
+            background: white;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .return-dropzone:hover {
+            border-color: var(--color-primary);
+        }
+
+        /* ==========================================================================
+           8. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ДОСТАВКИ"
+           ========================================================================== */
+        
+        .delivery-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .delivery-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 24px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .delivery-card.arrived {
+            border-color: var(--color-success);
+            background-color: #f0fdf4;
+        }
+
+        .delivery-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .delivery-info p {
+            font-size: 14px;
+            color: var(--color-text-muted);
+        }
+
+        .delivery-status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .delivery-card.arrived .delivery-status-badge {
+            background-color: var(--color-success-bg);
+            color: var(--color-success);
+        }
+
+        /* ==========================================================================
+           9. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ЕЩЕ" (НАСТРОЙКИ)
+           ========================================================================== */
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .settings-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-card-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .settings-icon-wrap {
+            width: 56px;
+            height: 56px;
+            background-color: var(--color-primary-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+        }
+
+        .settings-text-wrap h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .settings-text-wrap p {
+            font-size: 13px;
+            color: var(--color-text-muted);
+        }
+
+        /* Переключатель (Toggle) */
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background-color: #cbd5e1;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch.on {
+            background-color: var(--color-primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.on::after {
+            transform: translateX(24px);
+        }
+
+        /* ==========================================================================
+           10. СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ ВКЛАДКИ "ПРОФИЛЬ"
+           ========================================================================== */
+        
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+            height: 100%;
+        }
+
+        .profile-main-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background-color: var(--color-primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            margin-bottom: 20px;
+            border: 4px solid white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .profile-role {
+            font-size: 14px;
+            color: var(--color-text-muted);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .profile-id-badge {
+            background-color: var(--color-bg-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: 30px;
+            border: 1px solid var(--color-border);
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .p-stat-box {
+            background-color: var(--color-bg-main);
+            border-radius: var(--radius-md);
+            padding: 20px 10px;
+            border: 1px solid var(--color-border);
+        }
+
+        .p-stat-val {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: 4px;
+        }
+
+        .p-stat-lbl {
+            font-size: 11px;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .profile-side-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .shift-panel {
+            background: linear-gradient(135deg, var(--color-primary), #0f233f);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .shift-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .shift-title {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .shift-timer {
+            font-size: 48px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .shift-status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background-color: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .shift-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 24px;
+        }
+
+        .shift-actions button {
+            flex: 1;
+            background-color: white;
+            color: var(--color-primary);
+            border: none;
+        }
+
+        .shift-actions button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .settings-list-panel {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .settings-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .settings-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-list-item:hover {
+            background-color: var(--color-bg-hover);
+        }
+
+        .settings-list-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .settings-list-icon {
+            color: var(--color-primary);
+        }
+
+        .settings-list-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .settings-list-action {
+            color: var(--color-text-muted);
+            font-size: 20px;
+        }
+
+        /* ==========================================================================
+           11. МОДАЛЬНЫЕ ОКНА И ОВЕРЛЕИ
+           ========================================================================== */
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 35, 63, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-window {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: 40px;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .modal-overlay.show .modal-window {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+        }
+
+        .modal-icon.success {
+            background-color: var(--color-success-bg);
+            color: var(--color-success);
+        }
+
+        .modal-icon.warning {
+            background-color: var(--color-warning-bg);
+            color: var(--color-warning);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            font-size: 15px;
+            color: var(--color-text-muted);
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+    </style>
 </head>
 <body>
 
-  <!-- ================= САЙДБАР ================= -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-    </div>
-    <div class="sidebar-info">ID 318205<br>V1.12.0</div>
-    
-    <!-- Общие кнопки -->
-    <div class="nav-item active" onclick="setSidebarActive(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      Главная
-    </div>
-
-    <!-- СПЕЦИАЛЬНОЕ МЕНЮ (ПОЯВЛЯЕТСЯ ТОЛЬКО ВО ВКЛАДКЕ ВОЗВРАТ) -->
-    <div class="return-menu" id="return-menu">
-      <div class="nav-item" onclick="setSidebarActive(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-        <span class="badge-red">5</span> Товары
-      </div>
-      <div class="nav-item" onclick="setSidebarActive(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline></svg>
-        Коробки
-      </div>
-      <div class="nav-item" onclick="setSidebarActive(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg>
-        WB MP
-      </div>
-      <div class="nav-item" onclick="setSidebarActive(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line></svg>
-        Картон
-      </div>
-      <div class="nav-item" onclick="setSidebarActive(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line></svg>
-        Утиль
-      </div>
-    </div>
-    
-    <div class="sidebar-bottom">
-      <div class="nav-item" style="height: 60px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        Профиль
-      </div>
-    </div>
-  </aside>
-
-  <!-- ================= ОСНОВНАЯ ЧАСТЬ ================= -->
-  <div class="main-wrapper">
-    
-    <!-- ТОПБАР -->
-    <header class="topbar">
-      <div class="topbar-icons">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      </div>
-
-      <!-- ВКЛАДКИ -->
-      <div class="topbar-tabs">
-        <div class="tab active" data-target="tab-issue" onclick="switchTab(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>
-          Выдача
-        </div>
-        <div class="tab" data-target="tab-receive" onclick="switchTab(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-          Приёмка
-        </div>
-        <div class="tab" data-target="tab-return" onclick="switchTab(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span class="tab-badge">5</span>
-          Возврат
-        </div>
-        <div class="tab" data-target="tab-delivery" onclick="switchTab(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-          Доставки
-        </div>
-        <div class="tab" data-target="tab-more" onclick="switchTab(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          Еще
-        </div>
-      </div>
-
-      <div class="topbar-icons" style="margin-left: auto;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-      </div>
-    </header>
-
-    <!-- ================= КОНТЕНТ ================= -->
-    <div class="content-wrapper">
-
-      <!-- 1. ВЫДАЧА -->
-      <section id="tab-issue" class="tab-content active">
-        <div class="issue-layout">
-          <div class="issue-center">
-            <h1 class="issue-title">Выдача</h1>
-            <p class="issue-subtitle">Отсканируйте QR-код клиента или курьера</p>
-            
-            <div class="scanner-svg">
-              <svg viewBox="0 0 300 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M40 80V50H70" /><path d="M120 50H150V80" /><path d="M150 120V150H120" /><path d="M70 150H40V120" />
-                  <rect x="60" y="70" width="15" height="15" fill="var(--accent)" /><rect x="110" y="70" width="15" height="15" fill="var(--accent)" /><rect x="60" y="115" width="15" height="15" fill="var(--accent)" />
-                </g>
-                <polygon points="160,90 220,60 220,140" fill="url(#scanGradient)" opacity="0.4" />
-                <defs><linearGradient id="scanGradient" x1="160" y1="100" x2="220" y2="100" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)" /><stop offset="1" stop-color="var(--accent)" stop-opacity="0" /></linearGradient></defs>
-                <g stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round">
-                  <path d="M230 150 L250 190 C252 194, 248 198, 244 198 L220 180 Z" fill="#f4f6f9" />
-                  <path d="M170 80 L220 60 C230 56, 240 60, 245 70 L260 100 C265 110, 260 120, 250 125 L200 145 C190 149, 180 145, 175 135 Z" fill="#f4f6f9" />
-                </g>
-              </svg>
-            </div>
-
-            <div class="divider">или</div>
-            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">введите его номер телефона</p>
-            
-            <!-- Интерактивный инпут -->
-            <input type="text" id="phoneInput" class="phone-input" placeholder="Последние 4 цифры" maxlength="4" inputmode="numeric" oninput="checkPhone()">
-            
-            <!-- Карточка клиента (скрыта изначально) -->
-            <div class="client-found-card" id="clientCard">
-              <h4>Клиент найден</h4>
-              <p><b>Заказ:</b> № 9841205 (Коробка 14)</p>
-              <p><b>Телефон:</b> +7 (999) ***-45-12</p>
-              <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="issueOrder()">Выдать заказ</button>
-            </div>
-            
-            <button class="link-btn" style="margin-top: 20px;">Выдать из отмены</button>
-          </div>
-
-          <div class="issue-right">
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Выдача сертификата</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.4;">Отсканируйте QR-код либо нажмите на кнопку «Выдать сертификат»</p>
-            <div class="cert-card">
-              <div class="cert-logo">wb</div>
-              <div class="cert-text">подарочный сертификат</div>
-            </div>
-            <div style="text-align: center; margin-bottom: 24px;">
-              <svg width="140" height="140" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100" height="100" fill="white"/>
-                <g fill="#1a1a1a">
-                  <path d="M10 10h20v20H10z M15 15h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <path d="M70 10h20v20H70z M75 15h10v10H75z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <path d="M10 70h20v20H10z M15 75h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <rect x="40" y="10" width="10" height="10"/><rect x="50" y="20" width="10" height="10"/><rect x="40" y="30" width="20" height="10"/><rect x="70" y="40" width="10" height="20"/><rect x="10" y="40" width="10" height="10"/><rect x="20" y="50" width="10" height="10"/><rect x="40" y="50" width="10" height="20"/><rect x="60" y="60" width="20" height="10"/><rect x="40" y="80" width="20" height="10"/><rect x="70" y="80" width="10" height="10"/>
-                </g>
-              </svg>
-            </div>
-            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="showToast('Сертификат успешно выдан!', true)">Выдать сертификат</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 2. ПРИЁМКА -->
-      <section id="tab-receive" class="tab-content">
-        <div class="receive-layout">
-          <div class="receive-center">
-            <svg width="180" height="180" viewBox="0 0 100 100" fill="none" style="margin-bottom: 30px;">
-              <path d="M25 40 L60 25 C65 23 72 26 75 32 L85 55 C88 62 85 68 78 72 L45 88 C38 91 32 88 28 80 Z" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" fill="var(--accent-light)"/>
-              <path d="M25 40 L32 60 L45 88" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
-              <path d="M28 80 L15 55" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-              <rect x="50" y="42" width="12" height="12" rx="2" stroke="var(--accent)" stroke-width="2" fill="none"/>
+    <!-- ======================================================================
+         БОКОВАЯ ПАНЕЛЬ (SIDEBAR)
+         ====================================================================== -->
+    <aside class="sidebar">
+        <!-- Логотип -->
+        <div class="sidebar-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
-            <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 12px;">Начните процесс приёмки</h2>
-            <p style="font-size: 16px; color: var(--text-muted); max-width: 400px; margin-bottom: 20px;">Отсканируйте QR-код на упаковке товара, чтобы добавить его в поставку</p>
-            <button class="btn btn-primary" onclick="simulateScan()">Сканировать товар</button>
-            
-            <div class="received-list" id="receivedList">
-              <!-- Сюда падают отсканированные товары -->
-            </div>
-          </div>
-          
-          <div class="receive-right">
-            <button class="btn btn-outline" onclick="showToast('Функция без ШК вызвана', true)">Принять товар без ШК</button>
-            <button class="btn btn-primary" onclick="toggleTimer()" id="btnTimer">Начать поставку</button>
-            <div class="scan-timer" id="timerDisplay">00:00</div>
-            
-            <div class="qr-box" style="border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px;">
-              <div style="font-size: 13px; color: var(--text-main); margin-bottom: 15px; font-weight: 500;">QR-код для брака</div>
-              <svg width="120" height="120" viewBox="0 0 100 100" fill="none" style="margin: 0 auto;">
-                <rect width="100" height="100" fill="white"/>
-                <g fill="#1a1a1a">
-                  <path d="M10 10h20v20H10z M15 15h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <path d="M70 10h20v20H70z M75 15h10v10H75z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <path d="M10 70h20v20H10z M15 75h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
-                  <rect x="40" y="10" width="10" height="10"/><rect x="50" y="20" width="10" height="10"/><rect x="40" y="30" width="20" height="10"/><rect x="70" y="40" width="10" height="20"/><rect x="10" y="40" width="10" height="10"/><rect x="20" y="50" width="10" height="10"/><rect x="40" y="50" width="10" height="20"/><rect x="60" y="60" width="20" height="10"/>
-                </g>
-              </svg>
-            </div>
-          </div>
         </div>
-      </section>
-
-      <!-- 3. ВОЗВРАТ -->
-      <section id="tab-return" class="tab-content">
-        <div class="return-layout">
-          <div class="filters-row">
-            <select class="filter-select"><option>Все товары</option><option>Только брак</option></select>
-            <select class="filter-select"><option>От новых к старым</option><option>От старых к новым</option></select>
-            <label class="filter-checkbox"><input type="checkbox"> Скрыть излишки (0)</label>
-          </div>
-
-          <div class="banner" id="returnBanner">
-            <div>Не забывайте регистрировать рулоны с наклейками для корректной работы с товарами при возврате</div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-              <span>Осталось стикеров: 744</span>
-              <span class="close" onclick="closeBanner()">×</span>
-            </div>
-          </div>
-
-          <div class="return-work-area">
-            <div class="return-left">
-              <div class="count-box" id="returnCountBox">
-                <div class="title">Количество товаров</div>
-                <div class="number" id="returnCount">5</div>
-              </div>
-              <button class="btn btn-primary" style="width: 100%;" onclick="createReturnBox()">Создать коробку</button>
-              <div class="warning-box">
-                <p>Добавьте товары из этого раздела в открытую возвратную коробку в течение 24 часов после присвоения им статуса отказа, автоотмены или приемки излишка.</p>
-                <p>Для ПВЗ с переупаковкой срок возврата продлевается до 48 часов</p>
-              </div>
-            </div>
-            
-            <div class="return-right" id="returnRightPanel">
-              <svg width="140" height="140" viewBox="0 0 100 100" fill="none">
-                <path d="M25 40 L60 25 C65 23 72 26 75 32 L85 55 C88 62 85 68 78 72 L45 88 C38 91 32 88 28 80 Z" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" fill="var(--accent-light)"/>
-                <path d="M25 40 L32 60 L45 88" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M28 80 L15 55" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-              </svg>
-              <div class="placeholder-text">Отсканируйте товар, чтобы добавить его в возвратную коробку</div>
-            </div>
-          </div>
+        
+        <!-- Информация о терминале -->
+        <div class="sidebar-info">
+            ID 318205<br>V1.12.0
         </div>
-      </section>
 
-      <!-- 4. ДОСТАВКИ -->
-      <section id="tab-delivery" class="tab-content">
-        <h2 style="font-size: 22px; margin-bottom: 10px;">Управление доставками</h2>
-        <div class="delivery-layout">
-          
-          <div class="delivery-card" id="delivery1">
-            <div class="delivery-card-info">
-              <h3>Курьер №A-42</h3>
-              <p>Ожидаемое прибытие: сегодня в 18:30</p>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-              <div class="delivery-status">В пути</div>
-              <button class="btn btn-outline" onclick="confirmDelivery('delivery1')">Прибыл</button>
-            </div>
-          </div>
-          
-          <div class="delivery-card" id="delivery2">
-            <div class="delivery-card-info">
-              <h3>Забор возвратов (Фургон)</h3>
-              <p>Ожидаемое прибытие: сегодня в 21:00</p>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-              <div class="delivery-status">Ожидание</div>
-              <button class="btn btn-outline" onclick="confirmDelivery('delivery2')">Прибыл</button>
-            </div>
-          </div>
-
+        <!-- Группа навигации -->
+        <div class="nav-group">
+            <a class="nav-item" onclick="switchTabBySidebar('tab-profile')" id="nav-profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="nav-text">Профиль</span>
+            </a>
+            <a class="nav-item" onclick="switchTabBySidebar('tab-more')" id="nav-more">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span class="nav-text">Настройки</span>
+            </a>
         </div>
-      </section>
 
-      <!-- 5. ЕЩЕ -->
-      <section id="tab-more" class="tab-content">
-        <h2 style="font-size: 22px; margin-bottom: 10px;">Настройки и система</h2>
-        <div class="settings-grid">
-          
-          <div class="settings-card">
-            <div class="settings-left">
-              <div class="settings-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-              <div class="settings-text">
-                <h4>Принтер этикеток</h4>
-                <p>Статус: Подключен</p>
-              </div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-
-          <div class="settings-card">
-            <div class="settings-left">
-              <div class="settings-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-              <div class="settings-text">
-                <h4>Звуки терминала</h4>
-                <p>Звуковое сопровождение</p>
-              </div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-
-          <div class="settings-card">
-            <div class="settings-left">
-              <div class="settings-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              </div>
-              <div class="settings-text">
-                <h4>Версия ПО</h4>
-                <p>v1.12.0 (актуальная)</p>
-              </div>
-            </div>
-            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;">Обновить</button>
-          </div>
-
+        <!-- ДИНАМИЧЕСКОЕ МЕНЮ (Показывается только в разделе Возврат) -->
+        <div class="dynamic-return-menu" id="dynamic-return-menu">
+            <a class="nav-item" onclick="setActiveSidebarItem(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+                <span class="badge-red">5</span>
+                <span class="nav-text">Товары</span>
+            </a>
+            <a class="nav-item" onclick="setActiveSidebarItem(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                </svg>
+                <span class="nav-text">Коробки</span>
+            </a>
+            <a class="nav-item" onclick="setActiveSidebarItem(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                </svg>
+                <span class="nav-text">WB MP</span>
+            </a>
+            <a class="nav-item" onclick="setActiveSidebarItem(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="9"></line>
+                </svg>
+                <span class="nav-text">Картон</span>
+            </a>
+            <a class="nav-item" onclick="setActiveSidebarItem(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                </svg>
+                <span class="nav-text">Утиль</span>
+            </a>
         </div>
-      </section>
 
+        <!-- Нижняя часть сайдбара -->
+        <div class="sidebar-bottom">
+            <a class="nav-item" onclick="showLogoutModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span class="nav-text" style="color: var(--color-danger);">Выход</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ======================================================================
+         ОСНОВНАЯ ОБЛАСТЬ
+         ====================================================================== -->
+    <div class="main-wrapper">
+        
+        <!-- ВЕРХНЕЕ МЕНЮ -->
+        <header class="topbar">
+            <div class="topbar-utils-left">
+                <button class="topbar-icon-btn" title="Меню">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <button class="topbar-icon-btn" title="Сканер">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>
+                </button>
+            </div>
+
+            <!-- ЦЕНТРАЛЬНЫЕ ВКЛАДКИ -->
+            <div class="topbar-tabs-container">
+                <div class="top-tab active" data-target="tab-issue" onclick="switchTopTab(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>
+                    <span>Выдача</span>
+                </div>
+                <div class="top-tab" data-target="tab-receive" onclick="switchTopTab(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    <span>Приёмка</span>
+                </div>
+                <div class="top-tab" data-target="tab-return" onclick="switchTopTab(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span class="top-tab-badge">5</span>
+                    <span>Возврат</span>
+                </div>
+                <div class="top-tab" data-target="tab-delivery" onclick="switchTopTab(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    <span>Доставки</span>
+                </div>
+            </div>
+
+            <div class="topbar-utils-right">
+                <!-- Системные часы -->
+                <div class="sys-clock" id="system-clock">00:00:00</div>
+                <button class="topbar-icon-btn" title="Обновить">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- ОБЛАСТЬ КОНТЕНТА -->
+        <main class="content-area">
+
+            <!-- =========================================================
+                 ВКЛАДКА 1: ВЫДАЧА
+                 ========================================================= -->
+            <section id="tab-issue" class="tab-content active">
+                <div class="issue-layout">
+                    <div class="issue-center panel">
+                        <h1 class="issue-title">Выдача</h1>
+                        <p class="issue-subtitle">Отсканируйте QR-код клиента или курьера</p>
+                        
+                        <!-- Векторная иллюстрация сканера -->
+                        <div class="scanner-graphic">
+                            <svg viewBox="0 0 300 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M40 80V50H70" />
+                                    <path d="M120 50H150V80" />
+                                    <path d="M150 120V150H120" />
+                                    <path d="M70 150H40V120" />
+                                </g>
+                                <polygon points="160,90 220,60 220,140" fill="url(#grad)" opacity="0.3" />
+                                <defs>
+                                    <linearGradient id="grad" x1="160" y1="100" x2="220" y2="100" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="var(--color-primary)" />
+                                        <stop offset="1" stop-color="var(--color-primary)" stop-opacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <g stroke="var(--color-primary)" stroke-width="2.5" stroke-linejoin="round">
+                                    <path d="M230 150 L250 190 C252 194, 248 198, 244 198 L220 180 Z" fill="#f4f6f9" />
+                                    <path d="M170 80 L220 60 C230 56, 240 60, 245 70 L260 100 C265 110, 260 120, 250 125 L200 145 C190 149, 180 145, 175 135 Z" fill="#f4f6f9" />
+                                    <path d="M170 80 L180 110 L200 145" fill="var(--color-primary-light)" />
+                                    <path d="M175 135 L160 100" stroke-width="3" />
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="divider-text">или введите номер</div>
+                        
+                        <div class="phone-input-wrapper">
+                            <input type="text" id="issue-phone-input" class="input-field phone-input" placeholder="****" maxlength="4" inputmode="numeric" oninput="checkPhoneInput(this.value)">
+                        </div>
+
+                        <!-- Скрытая карточка клиента (появляется при вводе 4 цифр) -->
+                        <div class="client-card-found" id="issue-client-card">
+                            <h3 style="color: var(--color-primary); margin-bottom: 16px; font-size: 18px;">Клиент найден</h3>
+                            <div class="client-info-row">
+                                <span style="color: var(--color-text-muted);">Заказ №</span>
+                                <strong>9841205</strong>
+                            </div>
+                            <div class="client-info-row">
+                                <span style="color: var(--color-text-muted);">Ячейка</span>
+                                <strong>14</strong>
+                            </div>
+                            <div class="client-info-row">
+                                <span style="color: var(--color-text-muted);">Товаров</span>
+                                <strong>1 шт.</strong>
+                            </div>
+                            <button class="btn btn-primary w-full" style="margin-top: 16px;" onclick="executeIssueOrder()">Подтвердить выдачу</button>
+                        </div>
+                    </div>
+
+                    <div class="issue-right-panel">
+                        <div class="panel" style="display: flex; flex-direction: column; align-items: center;">
+                            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Сертификаты</h2>
+                            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px; text-align: center;">Выдача подарочных карт WB</p>
+                            
+                            <div class="certificate-banner w-full">
+                                <div class="cert-logo">wb</div>
+                                <div style="font-size: 12px; opacity: 0.8;">подарочный сертификат</div>
+                            </div>
+                            
+                            <div class="qr-container w-full" style="margin-top: 20px;">
+                                <svg width="140" height="140" viewBox="0 0 100 100" fill="none">
+                                    <rect width="100" height="100" fill="white"/>
+                                    <g fill="#1a1a1a">
+                                        <path d="M10 10h20v20H10z M15 15h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
+                                        <path d="M70 10h20v20H70z M75 15h10v10H75z" fill-rule="evenodd" clip-rule="evenodd"/>
+                                        <path d="M10 70h20v20H10z M15 75h10v10H15z" fill-rule="evenodd" clip-rule="evenodd"/>
+                                        <rect x="40" y="10" width="10" height="10"/>
+                                        <rect x="50" y="20" width="10" height="10"/>
+                                        <rect x="40" y="30" width="20" height="10"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <button class="btn btn-primary w-full" style="margin-top: 20px;" onclick="showToast('Сертификат активирован', 'success')">Выдать сертификат</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 ВКЛАДКА 2: ПРИЁМКА
+                 ========================================================= -->
+            <section id="tab-receive" class="tab-content">
+                <div class="receive-layout">
+                    <div class="receive-center panel">
+                        <svg width="160" height="160" viewBox="0 0 100 100" fill="none" style="margin-bottom: 30px;">
+                            <path d="M25 40 L60 25 C65 23 72 26 75 32 L85 55 C88 62 85 68 78 72 L45 88 C38 91 32 88 28 80 Z" stroke="var(--color-primary)" stroke-width="3" stroke-linejoin="round" fill="var(--color-primary-light)"/>
+                            <path d="M25 40 L32 60 L45 88" stroke="var(--color-primary)" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M28 80 L15 55" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                        <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 12px;">Приёмка товара</h2>
+                        <p style="font-size: 16px; color: var(--color-text-muted); margin-bottom: 30px; text-align: center;">Используйте сканер для добавления коробок в текущую поставку</p>
+                        
+                        <button class="btn btn-primary" onclick="simulateReceiveScan()" style="padding: 16px 40px; font-size: 16px;">Сканировать ШК</button>
+                        
+                        <div class="received-items-list" id="received-items-list">
+                            <!-- Сюда динамически добавляются отсканированные коробки -->
+                        </div>
+                    </div>
+
+                    <div class="receive-right-panel">
+                        <div class="panel" style="padding: 20px;">
+                            <h3 style="font-size: 16px; margin-bottom: 15px;">Управление поставкой</h3>
+                            <button class="btn btn-primary w-full" onclick="toggleReceiveTimer()" id="btn-receive-timer">Начать смену</button>
+                            <div class="timer-display" id="receive-timer-display">00:00:00</div>
+                            
+                            <button class="btn btn-outline w-full" style="margin-top: 15px;" onclick="showToast('Режим приёмки без ШК', 'info')">Принять без ШК</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 ВКЛАДКА 3: ВОЗВРАТ (Имеет свое боковое меню)
+                 ========================================================= -->
+            <section id="tab-return" class="tab-content">
+                <div class="return-layout">
+                    <!-- Панель фильтров -->
+                    <div class="filters-toolbar">
+                        <select class="select-filter">
+                            <option>Все товары</option>
+                            <option>Только брак</option>
+                            <option>Автоотмены</option>
+                        </select>
+                        <select class="select-filter">
+                            <option>Сначала новые</option>
+                            <option>Сначала старые</option>
+                        </select>
+                        <label class="checkbox-filter">
+                            <input type="checkbox"> Скрыть излишки (0)
+                        </label>
+                    </div>
+
+                    <!-- Баннер с предупреждением -->
+                    <div class="info-alert" id="return-alert-banner">
+                        <span>Не забывайте клеить стикеры на возвратные коробки для корректной работы.</span>
+                        <span class="close-alert" onclick="document.getElementById('return-alert-banner').style.display='none'">×</span>
+                    </div>
+
+                    <!-- Рабочая зона -->
+                    <div class="return-workspace">
+                        <div class="return-sidebar-controls">
+                            <div class="stat-box">
+                                <div class="stat-box-title">Количество товаров</div>
+                                <div class="stat-box-value" id="return-items-count">5</div>
+                            </div>
+                            <button class="btn btn-primary w-full" onclick="createReturnBox()">Создать коробку</button>
+                            
+                            <div class="warning-box">
+                                <p>Добавьте товары из этого раздела в коробку в течение 24 часов.</p>
+                                <p>Для ПВЗ с переупаковкой срок продлевается до 48 часов.</p>
+                            </div>
+                        </div>
+
+                        <div class="return-dropzone">
+                            <svg width="120" height="120" viewBox="0 0 100 100" fill="none" style="margin-bottom: 20px; opacity: 0.5;">
+                                <path d="M25 40 L60 25 C65 23 72 26 75 32 L85 55 C88 62 85 68 78 72 L45 88 C38 91 32 88 28 80 Z" stroke="var(--color-text-muted)" stroke-width="3" stroke-linejoin="round"/>
+                            </svg>
+                            <h3 style="font-size: 20px; color: var(--color-text-muted);">Зона сканирования</h3>
+                            <p style="font-size: 14px; color: var(--color-text-muted); margin-top: 10px;">Отсканируйте товар, чтобы добавить его в возврат</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 ВКЛАДКА 4: ДОСТАВКИ
+                 ========================================================= -->
+            <section id="tab-delivery" class="tab-content">
+                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 10px;">Ожидаемые доставки</h2>
+                <div class="delivery-list">
+                    
+                    <!-- Карточка 1 -->
+                    <div class="delivery-card" id="courier-1">
+                        <div class="delivery-info">
+                            <h3>Курьер №A-42</h3>
+                            <p>Ожидаемое прибытие: Сегодня, 18:30</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <span class="delivery-status-badge">В пути</span>
+                            <button class="btn btn-outline" onclick="markCourierArrived('courier-1')">Прибыл</button>
+                        </div>
+                    </div>
+
+                    <!-- Карточка 2 -->
+                    <div class="delivery-card" id="courier-2">
+                        <div class="delivery-info">
+                            <h3>Забор возвратов (Фургон)</h3>
+                            <p>Ожидаемое прибытие: Сегодня, 21:00</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <span class="delivery-status-badge">Ожидание</span>
+                            <button class="btn btn-outline" onclick="markCourierArrived('courier-2')">Прибыл</button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 ВКЛАДКА 5: ПРОФИЛЬ
+                 ========================================================= -->
+            <section id="tab-profile" class="tab-content">
+                <div class="profile-layout">
+                    
+                    <!-- Левая колонка: Карточка сотрудника -->
+                    <div class="profile-main-card">
+                        <div class="profile-avatar">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div class="profile-name">Иван Петров</div>
+                        <div class="profile-role">Оператор ПВЗ</div>
+                        <div class="profile-id-badge">ID: 318205</div>
+
+                        <div class="profile-stats-grid">
+                            <div class="p-stat-box">
+                                <div class="p-stat-val" id="stat-issued">0</div>
+                                <div class="p-stat-lbl">Выдано</div>
+                            </div>
+                            <div class="p-stat-box">
+                                <div class="p-stat-val" id="stat-received">0</div>
+                                <div class="p-stat-lbl">Принято</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка: Смена и настройки -->
+                    <div class="profile-side-panels">
+                        
+                        <!-- Блок смены -->
+                        <div class="shift-panel">
+                            <div class="shift-header">
+                                <div class="shift-title">Текущая смена</div>
+                                <div class="shift-status" id="shift-status-text">Не начата</div>
+                            </div>
+                            <div class="shift-timer" id="shift-timer-display">00:00:00</div>
+                            
+                            <div class="shift-actions">
+                                <button class="btn" onclick="toggleShift()" id="btn-shift-toggle">Открыть смену</button>
+                            </div>
+                        </div>
+
+                        <!-- Список настроек профиля -->
+                        <div class="settings-list-panel">
+                            <div class="settings-list-item" onclick="showToast('Смена PIN-кода запрошена', 'info')">
+                                <div class="settings-list-left">
+                                    <div class="settings-list-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    </div>
+                                    <div class="settings-list-text">Сменить PIN-код</div>
+                                </div>
+                                <div class="settings-list-action">›</div>
+                            </div>
+                            
+                            <div class="settings-list-item" onclick="showToast('Запрос в техподдержку отправлен', 'success')">
+                                <div class="settings-list-left">
+                                    <div class="settings-list-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    </div>
+                                    <div class="settings-list-text">Помощь и поддержка</div>
+                                </div>
+                                <div class="settings-list-action">›</div>
+                            </div>
+
+                            <div class="settings-list-item" onclick="showLogoutModal()">
+                                <div class="settings-list-left">
+                                    <div class="settings-list-icon" style="color: var(--color-danger);">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                    </div>
+                                    <div class="settings-list-text" style="color: var(--color-danger);">Завершить сеанс</div>
+                                </div>
+                                <div class="settings-list-action">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 ВКЛАДКА 6: ЕЩЕ (НАСТРОЙКИ ОБОРУДОВАНИЯ)
+                 ========================================================= -->
+            <section id="tab-more" class="tab-content">
+                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 10px;">Оборудование и система</h2>
+                <div class="settings-grid">
+                    
+                    <div class="settings-card">
+                        <div class="settings-card-left">
+                            <div class="settings-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            </div>
+                            <div class="settings-text-wrap">
+                                <h4>Принтер этикеток</h4>
+                                <p>Статус: Подключен</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-left">
+                            <div class="settings-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>
+                            </div>
+                            <div class="settings-text-wrap">
+                                <h4>Сканер ШК</h4>
+                                <p>Статус: Готов</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-left">
+                            <div class="settings-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            </div>
+                            <div class="settings-text-wrap">
+                                <h4>Звуки</h4>
+                                <p>Уведомления терминала</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
     </div>
-  </div>
 
-  <!-- Контейнер для уведомлений -->
-  <div id="toast-container"></div>
+    <!-- ======================================================================
+         МОДАЛЬНЫЕ ОКНА И УВЕДОМЛЕНИЯ
+         ====================================================================== -->
+    
+    <!-- Контейнер для Toast-уведомлений -->
+    <div class="toast-container" id="toast-container"></div>
 
-  <!-- ================= JAVASCRIPT ЛОГИКА ================= -->
-  <script>
-    // 1. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК И УМНОЕ МЕНЮ
-    function switchTab(element) {
-      // Снимаем активность с табов
-      document.querySelectorAll('.topbar-tabs .tab').forEach(tab => tab.classList.remove('active'));
-      element.classList.add('active');
+    <!-- Модальное окно: Успешная операция -->
+    <div class="modal-overlay" id="modal-success">
+        <div class="modal-window">
+            <div class="modal-icon success">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 class="modal-title" id="modal-success-title">Успешно!</h2>
+            <p class="modal-text" id="modal-success-text">Операция выполнена.</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('modal-success')">Продолжить</button>
+            </div>
+        </div>
+    </div>
 
-      // Скрываем весь контент
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
-      // Показываем нужный
-      const targetId = element.getAttribute('data-target');
-      document.getElementById(targetId).classList.add('active');
+    <!-- Модальное окно: Подтверждение выхода -->
+    <div class="modal-overlay" id="modal-logout">
+        <div class="modal-window">
+            <div class="modal-icon warning">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <h2 class="modal-title">Завершение работы</h2>
+            <p class="modal-text">Вы уверены, что хотите выйти из системы? Все несохраненные данные смены будут утеряны.</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('modal-logout')">Отмена</button>
+                <button class="btn btn-danger" onclick="executeLogout()">Выйти</button>
+            </div>
+        </div>
+    </div>
 
-      // МАГИЯ САЙДБАРА: Показываем спец. меню только для ВОЗВРАТА
-      const returnMenu = document.getElementById('return-menu');
-      if (targetId === 'tab-return') {
-        returnMenu.classList.add('show');
-      } else {
-        returnMenu.classList.remove('show');
-      }
-    }
+    <!-- ======================================================================
+         JAVASCRIPT ЛОГИКА
+         ====================================================================== -->
+    <script>
+        /**
+         * ГЛОБАЛЬНОЕ СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+         * Здесь хранятся все данные текущей сессии.
+         */
+        const AppState = {
+            user: {
+                name: "Иван Петров",
+                role: "Оператор",
+                id: "318205"
+            },
+            stats: {
+                issuedToday: 0,
+                receivedToday: 0,
+                returnsToday: 5
+            },
+            timers: {
+                shift: {
+                    isActive: false,
+                    seconds: 0,
+                    intervalId: null
+                },
+                receive: {
+                    isActive: false,
+                    seconds: 0,
+                    intervalId: null
+                }
+            }
+        };
 
-    // Переключение левого меню (визуальное)
-    function setSidebarActive(element) {
-      document.querySelectorAll('.sidebar .nav-item').forEach(item => item.classList.remove('active'));
-      element.classList.add('active');
-    }
+        /**
+         * ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            initClock();
+            updateProfileStats();
+        });
 
-    // 2. УВЕДОМЛЕНИЯ (TOASTS)
-    function showToast(message, isSuccess = false) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'toast' + (isSuccess ? ' success' : '');
-      toast.innerHTML = (isSuccess ? '✅ ' : 'ℹ️ ') + message;
-      container.appendChild(toast);
+        /**
+         * СИСТЕМНЫЕ ЧАСЫ (Верхний правый угол)
+         */
+        function initClock() {
+            const clockEl = document.getElementById('system-clock');
+            
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
 
-      setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
+        /**
+         * ПЕРЕКЛЮЧЕНИЕ ВЕРХНИХ ВКЛАДОК
+         */
+        function switchTopTab(element) {
+            // 1. Убираем класс active у всех верхних вкладок
+            const tabs = document.querySelectorAll('.top-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 2. Добавляем active кликнутой
+            element.classList.add('active');
 
-    // 3. ЛОГИКА ВКЛАДКИ ВЫДАЧА
-    function checkPhone() {
-      const input = document.getElementById('phoneInput');
-      const card = document.getElementById('clientCard');
-      
-      // Если введено 4 цифры — показываем карточку
-      if (input.value.length === 4) {
-        card.classList.add('show');
-      } else {
-        card.classList.remove('show');
-      }
-    }
+            // 3. Скрываем весь контент
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
 
-    function issueOrder() {
-      document.getElementById('clientCard').classList.remove('show');
-      document.getElementById('phoneInput').value = '';
-      showToast('Заказ успешно выдан клиенту!', true);
-    }
+            // 4. Показываем нужный контент
+            const targetId = element.getAttribute('data-target');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
 
-    // 4. ЛОГИКА ВКЛАДКИ ПРИЁМКА
-    let receiveCount = 0;
-    function simulateScan() {
-      receiveCount++;
-      const list = document.getElementById('receivedList');
-      const item = document.createElement('div');
-      item.className = 'received-item';
-      item.innerHTML = `<span>Коробка #WB-${Math.floor(Math.random() * 90000) + 10000}</span> <b style="color: var(--success)">Принято</b>`;
-      list.prepend(item);
-      showToast('Товар отсканирован и добавлен', true);
-    }
+            // 5. Управление сайдбаром (Показываем меню возврата только в разделе Возврат)
+            const dynamicMenu = document.getElementById('dynamic-return-menu');
+            const navProfile = document.getElementById('nav-profile');
+            const navMore = document.getElementById('nav-more');
 
-    let timerInterval;
-    let seconds = 0;
-    function toggleTimer() {
-      const btn = document.getElementById('btnTimer');
-      const display = document.getElementById('timerDisplay');
-      
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        btn.textContent = 'Продолжить поставку';
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-outline');
-      } else {
-        btn.textContent = 'Приостановить';
-        btn.classList.add('btn-primary');
-        btn.classList.remove('btn-outline');
-        display.classList.add('show');
+            // Сбрасываем активные пункты левого меню
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            if (targetId === 'tab-return') {
+                dynamicMenu.classList.add('show');
+            } else {
+                dynamicMenu.classList.remove('show');
+                
+                // Подсвечиваем левое меню, если мы перешли на Профиль или Настройки через верхнее меню
+                if (targetId === 'tab-profile') navProfile.classList.add('active');
+                if (targetId === 'tab-more') navMore.classList.add('active');
+            }
+        }
+
+        /**
+         * ПЕРЕКЛЮЧЕНИЕ ЧЕРЕЗ БОКОВОЕ МЕНЮ (Профиль, Настройки)
+         */
+        function switchTabBySidebar(targetTabId) {
+            // Снимаем активность с левого меню
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            // Ставим активность на кликнутый пункт
+            const navItem = document.getElementById(targetTabId === 'tab-profile' ? 'nav-profile' : 'nav-more');
+            if (navItem) navItem.classList.add('active');
+
+            // Скрываем меню возврата, так как мы ушли с этой вкладки
+            document.getElementById('dynamic-return-menu').classList.remove('show');
+
+            // Скрываем все контенты
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Показываем нужный
+            const targetContent = document.getElementById(targetTabId);
+            if (targetContent) targetContent.classList.add('active');
+
+            // Сбрасываем активность верхних вкладок, так как мы перешли по боковому меню
+            document.querySelectorAll('.top-tab').forEach(tab => tab.classList.remove('active'));
+        }
+
+        /**
+         * Вспомогательная функция для кликов по внутреннему меню Возврата
+         */
+        function setActiveSidebarItem(element) {
+            document.querySelectorAll('#dynamic-return-menu .nav-item').forEach(n => n.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        /**
+         * СИСТЕМА УВЕДОМЛЕНИЙ (TOASTS)
+         */
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = '';
+            if (type === 'success') icon = '✅ ';
+            if (type === 'error') icon = '❌ ';
+            if (type === 'info') icon = 'ℹ️ ';
+
+            toast.innerHTML = `${icon}${message}`;
+            container.appendChild(toast);
+
+            // Автоудаление через 3 секунды
+            setTimeout(() => {
+                toast.style.animation = 'fadeOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /**
+         * МОДАЛЬНЫЕ ОКНА
+         */
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        /* ======================================================================
+           ЛОГИКА ВКЛАДКИ "ВЫДАЧА"
+           ====================================================================== */
         
-        timerInterval = setInterval(() => {
-          seconds++;
-          const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-          const s = String(seconds % 60).padStart(2, '0');
-          display.textContent = `${m}:${s}`;
-        }, 1000);
-      }
-    }
+        function checkPhoneInput(value) {
+            const clientCard = document.getElementById('issue-client-card');
+            
+            // Если введено ровно 4 символа, показываем карточку
+            if (value.length === 4) {
+                clientCard.classList.add('show');
+            } else {
+                clientCard.classList.remove('show');
+            }
+        }
 
-    // 5. ЛОГИКА ВКЛАДКИ ВОЗВРАТ
-    function closeBanner() {
-      document.getElementById('returnBanner').classList.add('hidden');
-    }
+        function executeIssueOrder() {
+            // 1. Скрываем карточку
+            document.getElementById('issue-client-card').classList.remove('show');
+            
+            // 2. Очищаем инпут
+            document.getElementById('issue-phone-input').value = '';
 
-    function createReturnBox() {
-      const countEl = document.getElementById('returnCount');
-      let currentCount = parseInt(countEl.textContent);
-      
-      if (currentCount > 0) {
-        countEl.textContent = currentCount - 1;
-        showToast('Возвратная коробка создана. Товар перемещен.');
+            // 3. Обновляем статистику
+            AppState.stats.issuedToday++;
+            updateProfileStats();
+
+            // 4. Показываем модалку успеха
+            document.getElementById('modal-success-title').textContent = "Заказ выдан";
+            document.getElementById('modal-success-text').textContent = "Заказ №9841205 успешно передан клиенту.";
+            showModal('modal-success');
+        }
+
+        /* ======================================================================
+           ЛОГИКА ВКЛАДКИ "ПРИЁМКА"
+           ====================================================================== */
+
+        function simulateReceiveScan() {
+            // Генерируем случайный номер коробки
+            const boxNumber = Math.floor(Math.random() * 90000) + 10000;
+            
+            // Создаем DOM-элемент
+            const list = document.getElementById('received-items-list');
+            const item = document.createElement('div');
+            item.className = 'received-item';
+            item.innerHTML = `
+                <div>
+                    <strong>Коробка #WB-${boxNumber}</strong><br>
+                    <span style="font-size: 12px; color: var(--color-text-muted);">Только что</span>
+                </div>
+                <span style="color: var(--color-success); font-weight: 700; font-size: 13px;">Принято</span>
+            `;
+            
+            // Добавляем в начало списка
+            list.prepend(item);
+
+            // Обновляем статистику
+            AppState.stats.receivedToday++;
+            updateProfileStats();
+
+            showToast(`Коробка #WB-${boxNumber} добавлена`, 'success');
+        }
+
+        function toggleReceiveTimer() {
+            const btn = document.getElementById('btn-receive-timer');
+            const display = document.getElementById('receive-timer-display');
+            const timerState = AppState.timers.receive;
+
+            if (timerState.isActive) {
+                // Останавливаем
+                clearInterval(timerState.intervalId);
+                timerState.isActive = false;
+                btn.textContent = 'Продолжить приёмку';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline');
+            } else {
+                // Запускаем
+                timerState.isActive = true;
+                btn.textContent = 'Приостановить приёмку';
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-outline');
+                display.classList.add('show');
+
+                timerState.intervalId = setInterval(() => {
+                    timerState.seconds++;
+                    display.textContent = formatTime(timerState.seconds);
+                }, 1000);
+            }
+        }
+
+        /* ======================================================================
+           ЛОГИКА ВКЛАДКИ "ВОЗВРАТ"
+           ====================================================================== */
+
+        function createReturnBox() {
+            const countEl = document.getElementById('return-items-count');
+            let currentCount = parseInt(countEl.textContent);
+
+            if (currentCount > 0) {
+                // Уменьшаем счетчик
+                currentCount--;
+                countEl.textContent = currentCount;
+                
+                // Обновляем статистику в профиле
+                AppState.stats.returnsToday++;
+                updateProfileStats();
+
+                showToast('Возвратная коробка сформирована', 'success');
+            } else {
+                showToast('Нет товаров для создания коробки', 'error');
+            }
+        }
+
+        /* ======================================================================
+           ЛОГИКА ВКЛАДКИ "ДОСТАВКИ"
+           ====================================================================== */
+
+        function markCourierArrived(cardId) {
+            const card = document.getElementById(cardId);
+            
+            // Добавляем класс arrived (зеленеет)
+            card.classList.add('arrived');
+            
+            // Меняем текст статуса
+            const badge = card.querySelector('.delivery-status-badge');
+            badge.textContent = 'Прибыл';
+
+            // Скрываем кнопку
+            const btn = card.querySelector('button');
+            btn.style.display = 'none';
+
+            showToast('Статус курьера обновлен на "Прибыл"', 'success');
+        }
+
+        /* ======================================================================
+           ЛОГИКА ВКЛАДКИ "ПРОФИЛЬ"
+           ====================================================================== */
+
+        function updateProfileStats() {
+            document.getElementById('stat-issued').textContent = AppState.stats.issuedToday;
+            document.getElementById('stat-received').textContent = AppState.stats.receivedToday;
+        }
+
+        function toggleShift() {
+            const btn = document.getElementById('btn-shift-toggle');
+            const display = document.getElementById('shift-timer-display');
+            const statusText = document.getElementById('shift-status-text');
+            const shiftTimer = AppState.timers.shift;
+
+            if (shiftTimer.isActive) {
+                // Закрываем смену
+                clearInterval(shiftTimer.intervalId);
+                shiftTimer.isActive = false;
+                
+                btn.textContent = 'Открыть смену';
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-primary');
+                
+                statusText.textContent = 'Смена закрыта';
+                statusText.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                
+                showToast('Смена успешно закрыта', 'info');
+            } else {
+                // Открываем смену
+                shiftTimer.isActive = true;
+                
+                btn.textContent = 'Закрыть смену';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+                
+                statusText.textContent = 'Смена активна';
+                statusText.style.backgroundColor = 'rgba(18, 160, 92, 0.8)';
+
+                shiftTimer.intervalId = setInterval(() => {
+                    shiftTimer.seconds++;
+                    display.textContent = formatTime(shiftTimer.seconds);
+                }, 1000);
+
+                showToast('Смена открыта. Хорошего дня!', 'success');
+            }
+        }
+
+        /* ======================================================================
+           ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+           ====================================================================== */
         
-        // Визуальный эффект
-        const box = document.getElementById('returnCountBox');
-        box.style.transform = 'scale(0.95)';
-        setTimeout(() => box.style.transform = 'scale(1)', 150);
-      } else {
-        showToast('Нет товаров для создания коробки', false);
-      }
-    }
+        // Форматирует секунды в HH:MM:SS
+        function formatTime(totalSeconds) {
+            const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(totalSeconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
 
-    // 6. ЛОГИКА ВКЛАДКИ ДОСТАВКИ
-    function confirmDelivery(id) {
-      const card = document.getElementById(id);
-      card.classList.add('arrived');
-      
-      const status = card.querySelector('.delivery-status');
-      status.textContent = 'Прибыл';
-      
-      const btn = card.querySelector('button');
-      btn.style.display = 'none'; // Скрываем кнопку после подтверждения
-      
-      showToast('Курьер отмечен как прибывший', true);
-    }
-  </script>
+        function showLogoutModal() {
+            showModal('modal-logout');
+        }
+
+        function executeLogout() {
+            closeModal('modal-logout');
+            showToast('Вы вышли из системы', 'info');
+            // В реальном приложении здесь был бы redirect на страницу логина
+        }
+
+    </script>
 </body>
 </html>
